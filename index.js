@@ -4,72 +4,93 @@ const { GoalBlock } = goals;
 const config = require('./settings.json');
 const express = require('express');
 const app = express();
+
 const PORT = process.env.PORT || 10000;
 
-app.get('/', (req, res) => res.send('✅ Bot is running!'));
-app.listen(PORT, () => console.log(`[WEB] Listening on port ${PORT}`));
+app.get('/', (req, res) => {
+  res.send('✅ Bot is online!');
+});
+
+app.listen(PORT, () => {
+  console.log(`[WEB] Listening on port ${PORT}`);
+});
 
 function createBot() {
   const bot = mineflayer.createBot({
-    username: config['bot-account'].username,
-    password: config['bot-account'].password,
-    auth: config['bot-account'].type,
+    username: config['bot-account']['username'],
+    password: config['bot-account']['password'],
+    auth: config['bot-account']['type'],
     host: config.server.ip,
     port: config.server.port,
-    version: config.server.version
+    version: config.server.version,
   });
 
-  bot.loadPlugin(pathfinder);
-  const mcData = require('minecraft-data')(bot.version);
-  const defaultMove = new Movements(bot, mcData);
-
   bot.once('spawn', () => {
-    console.log('[INFO] Bot spawned');
+    console.log('[BOT] Spawned');
 
-    if (config.utils['chat-messages'].enabled) {
-      const messages = config.utils['chat-messages'].messages;
-      let i = 0;
-      setInterval(() => {
-        bot.chat(messages[i]);
-        i = (i + 1) % messages.length;
-      }, config.utils['chat-messages']['repeat-delay'] * 1000);
-    }
+    // Load plugin sau khi spawn để tránh lỗi mcData null
+    bot.loadPlugin(pathfinder);
+    const mcData = require('minecraft-data')(bot.version);
+    const defaultMove = new Movements(bot, mcData);
 
+    // Anti-AFK
     if (config.utils['anti-afk'].enabled) {
       bot.setControlState('jump', true);
       if (config.utils['anti-afk'].sneak) {
         bot.setControlState('sneak', true);
       }
+    }
 
-      // 🟡 Random move:
-      if (config.utils['anti-afk'].randomMove) {
+    // Random move
+    if (config.utils['anti-afk'].randomMove) {
+      setInterval(() => {
+        const x = bot.entity.position.x + (Math.random() - 0.5) * 5;
+        const z = bot.entity.position.z + (Math.random() - 0.5) * 5;
+        const y = bot.entity.position.y;
+        bot.pathfinder.setMovements(defaultMove);
+        bot.pathfinder.setGoal(new GoalBlock(x, y, z));
+      }, 15000);
+    }
+
+    // Chat loop
+    if (config.utils['chat-messages'].enabled) {
+      const messages = config.utils['chat-messages'].messages;
+      const delay = config.utils['chat-messages']['repeat-delay'] * 1000;
+      let i = 0;
+      if (config.utils['chat-messages'].repeat) {
         setInterval(() => {
-          const pos = bot.entity.position;
-          const x = pos.x + (Math.random() * 6 - 3);
-          const z = pos.z + (Math.random() * 6 - 3);
-          const y = pos.y;
-          bot.pathfinder.setMovements(defaultMove);
-          bot.pathfinder.setGoal(new GoalBlock(Math.floor(x), Math.floor(y), Math.floor(z)));
-        }, 15000);
+          bot.chat(messages[i]);
+          i = (i + 1) % messages.length;
+        }, delay);
+      } else {
+        messages.forEach(msg => bot.chat(msg));
       }
     }
 
+    // Di chuyển đến tọa độ
     if (config.position.enabled) {
-      const p = config.position;
+      const pos = config.position;
       bot.pathfinder.setMovements(defaultMove);
-      bot.pathfinder.setGoal(new GoalBlock(p.x, p.y, p.z));
+      bot.pathfinder.setGoal(new GoalBlock(pos.x, pos.y, pos.z));
+      console.log(`[BOT] Moving to (${pos.x}, ${pos.y}, ${pos.z})`);
     }
   });
 
-  bot.on('end', () => {
-    if (config.utils['auto-reconnect']) {
-      console.log('[RECONNECT] Disconnected, reconnecting...');
+  // Auto reconnect
+  if (config.utils['auto-reconnect']) {
+    bot.on('end', () => {
+      console.log('[BOT] Disconnected, reconnecting...');
       setTimeout(createBot, config.utils['auto-recconect-delay']);
-    }
+    });
+  }
+
+  bot.on('kicked', reason => {
+    console.log('[BOT] Kicked:', reason);
   });
 
-  bot.on('kicked', reason => console.log('[KICKED]', reason));
-  bot.on('error', err => console.log('[ERROR]', err.message));
+  bot.on('error', err => {
+    console.error('[ERROR]', err.message);
+  });
 }
 
 createBot();
