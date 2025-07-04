@@ -25,11 +25,8 @@ function createBot() {
 
   bot.once('spawn', () => {
     console.log('[BOT] Spawned');
-
-    // ✅ Đặt sau khi spawn
     bot.settings.colorsEnabled = false;
 
-    // Load plugin sau spawn
     bot.loadPlugin(pathfinder);
     const mcData = require('minecraft-data')(bot.version);
     const defaultMove = new Movements(bot, mcData);
@@ -37,11 +34,8 @@ function createBot() {
     // Auto-auth
     if (config.utils['auto-auth'].enabled) {
       const password = config.utils['auto-auth'].password;
-
       bot.chat(`/register ${password} ${password}`);
-      bot.once('chat', () => {
-        bot.chat(`/login ${password}`);
-      });
+      bot.once('chat', () => bot.chat(`/login ${password}`));
     }
 
     // Auto chat
@@ -49,7 +43,6 @@ function createBot() {
       const messages = config.utils['chat-messages']['messages'];
       const delay = config.utils['chat-messages']['repeat-delay'] * 1000;
       let i = 0;
-
       if (config.utils['chat-messages'].repeat) {
         setInterval(() => {
           bot.chat(messages[i]);
@@ -60,25 +53,55 @@ function createBot() {
       }
     }
 
-    // Di chuyển đến vị trí
+    // Di chuyển đến tọa độ
     if (config.position.enabled) {
       const pos = config.position;
       bot.pathfinder.setMovements(defaultMove);
       bot.pathfinder.setGoal(new GoalBlock(pos.x, pos.y, pos.z));
-      console.log(`[BOT] Moving to (${pos.x}, ${pos.y}, ${pos.z})`);
     }
 
-    // ✅ Random move (anti AFK)
+    // 🛡️ Anti-AFK đầy đủ
     if (config.utils['anti-afk'].enabled) {
+      // Jump liên tục
+      bot.setControlState('jump', true);
+
+      // Sneak nếu bật
+      if (config.utils['anti-afk'].sneak) {
+        bot.setControlState('sneak', true);
+      }
+
+      // Di chuyển random
       setInterval(() => {
-        const dx = (Math.random() - 0.5) * 2;
-        const dz = (Math.random() - 0.5) * 2;
+        const dx = (Math.random() - 0.5) * 4;
+        const dz = (Math.random() - 0.5) * 4;
         const pos = bot.entity.position.offset(dx, 0, dz);
         bot.pathfinder.setMovements(defaultMove);
         bot.pathfinder.setGoal(new GoalBlock(
-          Math.floor(pos.x), Math.floor(pos.y), Math.floor(pos.z)
+          Math.floor(pos.x),
+          Math.floor(pos.y),
+          Math.floor(pos.z)
         ));
-      }, 15000); // mỗi 15 giây
+      }, 15000);
+
+      // Xoay đầu nhìn ngẫu nhiên
+      setInterval(() => {
+        const yaw = Math.random() * 2 * Math.PI;
+        const pitch = (Math.random() - 0.5) * Math.PI / 2;
+        bot.look(yaw, pitch, true);
+      }, 8000);
+
+      // Vung tay vào không khí
+      setInterval(() => {
+        bot.swingArm();
+      }, 20000);
+
+      // Tự ngồi nếu đang trong thuyền/minecart
+      setInterval(() => {
+        const vehicle = bot.entity.vehicle;
+        if (vehicle) {
+          bot.useEntity(vehicle);
+        }
+      }, 30000);
     }
   });
 
@@ -98,7 +121,7 @@ function createBot() {
     console.log(`[ERROR] ${err.message}`);
   });
 
-  // Auto reconnect
+  // Reconnect
   if (config.utils['auto-reconnect']) {
     bot.on('end', () => {
       console.log('[Reconnect] Bot disconnected. Reconnecting...');
@@ -108,3 +131,4 @@ function createBot() {
 }
 
 createBot();
+
