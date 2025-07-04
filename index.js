@@ -3,12 +3,11 @@ const { Movements } = require('mineflayer-pathfinder');
 const pathfinder = require('mineflayer-pathfinder').pathfinder;
 const { GoalBlock } = require('mineflayer-pathfinder').goals;
 const config = require('./settings.json');
-const Vec3 = require('vec3');
 
 const express = require('express');
 const app = express();
 
-// Web server giữ bot sống
+// Web server để giữ bot sống bằng UptimeRobot
 app.get('/', (req, res) => {
   res.send('✅ Bot is online!');
 });
@@ -18,7 +17,7 @@ app.listen(PORT, () => {
   console.log(`✅ Web server running on port ${PORT}`);
 });
 
-// Auto ping chính mình (Replit keep-alive)
+// Auto ping chính mình mỗi ~4 phút 40 giây
 setInterval(() => {
   require('http').get(`http://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
 }, 280000);
@@ -40,6 +39,7 @@ function createBot() {
 
   let pendingPromise = Promise.resolve();
 
+  // Register
   function sendRegister(password) {
     return new Promise((resolve, reject) => {
       bot.chat(`/register ${password} ${password}`);
@@ -55,6 +55,7 @@ function createBot() {
     });
   }
 
+  // Login
   function sendLogin(password) {
     return new Promise((resolve, reject) => {
       bot.chat(`/login ${password}`);
@@ -71,7 +72,7 @@ function createBot() {
   }
 
   bot.once('spawn', () => {
-    console.log('\x1b[33m[BOT] Spawned\x1b[0m');
+    console.log('\x1b[33m[AfkBot] Bot joined the server\x1b[0m');
 
     if (config.utils['auto-auth'].enabled) {
       const password = config.utils['auto-auth'].password;
@@ -81,6 +82,7 @@ function createBot() {
         .catch(err => console.error('[Auth Error]', err));
     }
 
+    // Gửi chat lặp
     if (config.utils['chat-messages'].enabled) {
       const messages = config.utils['chat-messages']['messages'];
       const delay = config.utils['chat-messages']['repeat-delay'] * 1000;
@@ -95,23 +97,15 @@ function createBot() {
       }
     }
 
+    // Anti AFK
     if (config.utils['anti-afk'].enabled) {
       bot.setControlState('jump', true);
       if (config.utils['anti-afk'].sneak) {
         bot.setControlState('sneak', true);
       }
-
-      // 👣 Random move mỗi 15 giây
-      setInterval(() => {
-        const x = bot.entity.position.x + Math.floor(Math.random() * 5 - 2);
-        const y = bot.entity.position.y;
-        const z = bot.entity.position.z + Math.floor(Math.random() * 5 - 2);
-        bot.pathfinder.setMovements(defaultMove);
-        bot.pathfinder.setGoal(new GoalBlock(x, y, z));
-        console.log(`[Move] Bot moving to (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`);
-      }, 15000);
     }
 
+    // Di chuyển đến tọa độ
     if (config.position.enabled) {
       const pos = config.position;
       bot.pathfinder.setMovements(defaultMove);
@@ -121,7 +115,7 @@ function createBot() {
   });
 
   bot.on('goal_reached', () => {
-    console.log(`[AfkBot] Reached goal`);
+    console.log(`[AfkBot] Reached goal: ${bot.entity.position}`);
   });
 
   bot.on('death', () => {
@@ -145,3 +139,4 @@ function createBot() {
 }
 
 createBot();
+
