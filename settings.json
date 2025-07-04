@@ -4,42 +4,36 @@
     "password": "",
     "type": "offline"
   },
-
   "server": {
     "ip": "serverchill99.aternos.me",
     "port": 11371,
-    "version": "1.21.4"
+    "version": "1.21.6"
   },
-
   "position": {
     "enabled": false,
     "x": 0,
     "y": 0,
     "z": 0
   },
-
   "utils": {
     "auto-auth": {
       "enabled": false,
       "password": ""
     },
-
     "anti-afk": {
       "enabled": true,
       "sneak": true
     },
-
     "chat-messages": {
       "enabled": true,
       "repeat": true,
       "repeat-delay": 120,
       "messages": [
-        "bao cát đã vào server",
-        "bố bất tử",
-        " T đang AFK nhẹ thôi"
+        "bot đây",
+        "đừng kill t",
+        "để t yên"
       ]
     },
-
     "chat-log": true,
     "auto-reconnect": true,
     "auto-recconect-delay": 30000
