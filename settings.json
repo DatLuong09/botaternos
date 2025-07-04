@@ -29,11 +29,11 @@
       "enabled": true,
       "repeat": true,
       "repeat-delay": 120,
-      "messages": ["bot đây", "đừng kill t", "để t yên"]
+      "messages": ["Bot hehehehehe", "Đừng kill t", "T đang AFK"]
     },
-    "chat-log": true,
     "auto-reconnect": true,
     "auto-recconect-delay": 30000
   }
 }
+
 
