@@ -7,7 +7,7 @@
   "server": {
     "ip": "serverchill99.aternos.me",
     "port": 11371,
-    "version": "1.21.6"
+    "version": "1.21.4"
   },
   "position": {
     "enabled": false,
