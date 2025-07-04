@@ -25,15 +25,18 @@ function createBot() {
     version: config.server.version,
   });
 
+  // Đặt ở đây sẽ gây lỗi mcData null:
+  // bot.loadPlugin(pathfinder); ❌
+
   bot.once('spawn', () => {
     console.log('[BOT] Spawned');
 
-    // Load plugin sau khi spawn để tránh lỗi mcData null
+    // ✅ Sau khi spawn mới load plugin
     bot.loadPlugin(pathfinder);
     const mcData = require('minecraft-data')(bot.version);
     const defaultMove = new Movements(bot, mcData);
 
-    // Anti-AFK
+    // Anti-AFK: nhảy và sneak
     if (config.utils['anti-afk'].enabled) {
       bot.setControlState('jump', true);
       if (config.utils['anti-afk'].sneak) {
@@ -41,11 +44,11 @@ function createBot() {
       }
     }
 
-    // Random move
+    // Random move mỗi 15 giây
     if (config.utils['anti-afk'].randomMove) {
       setInterval(() => {
-        const x = bot.entity.position.x + (Math.random() - 0.5) * 5;
-        const z = bot.entity.position.z + (Math.random() - 0.5) * 5;
+        const x = bot.entity.position.x + (Math.random() - 0.5) * 4;
+        const z = bot.entity.position.z + (Math.random() - 0.5) * 4;
         const y = bot.entity.position.y;
         bot.pathfinder.setMovements(defaultMove);
         bot.pathfinder.setGoal(new GoalBlock(x, y, z));
@@ -67,7 +70,7 @@ function createBot() {
       }
     }
 
-    // Di chuyển đến tọa độ
+    // Di chuyển cố định
     if (config.position.enabled) {
       const pos = config.position;
       bot.pathfinder.setMovements(defaultMove);
@@ -76,13 +79,12 @@ function createBot() {
     }
   });
 
-  // Auto reconnect
-  if (config.utils['auto-reconnect']) {
-    bot.on('end', () => {
-      console.log('[BOT] Disconnected, reconnecting...');
+  bot.on('end', () => {
+    console.log('[BOT] Disconnected, reconnecting...');
+    if (config.utils['auto-reconnect']) {
       setTimeout(createBot, config.utils['auto-recconect-delay']);
-    });
-  }
+    }
+  });
 
   bot.on('kicked', reason => {
     console.log('[BOT] Kicked:', reason);
