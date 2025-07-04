@@ -28,33 +28,39 @@ function createBot() {
   bot.once('spawn', () => {
     console.log('[BOT] Spawned');
 
-    // ✅ Chờ thêm 200ms rồi mới load plugin để tránh lỗi null
+    // ⏳ Delay đến khi bot.game dữ liệu sẵn sàng
     setTimeout(() => {
-      bot.loadPlugin(pathfinder);
-      const mcData = require('minecraft-data')(bot.version);
-      const defaultMove = new Movements(bot, mcData);
+      try {
+        const mcData = require('minecraft-data')(bot.version);
+        const defaultMove = new Movements(bot, mcData);
 
-      // ✅ Random move mỗi 15s
-      if (config.utils['anti-afk'].enabled && config.utils['anti-afk'].randomMove) {
-        setInterval(() => {
-          const x = bot.entity.position.x + (Math.random() - 0.5) * 4;
-          const z = bot.entity.position.z + (Math.random() - 0.5) * 4;
-          const y = bot.entity.position.y;
+        // ✅ Load plugin sau khi mcData có
+        bot.loadPlugin(pathfinder);
+
+        // ✅ Random move
+        if (config.utils['anti-afk'].enabled && config.utils['anti-afk'].randomMove) {
+          setInterval(() => {
+            const x = bot.entity.position.x + (Math.random() - 0.5) * 6;
+            const z = bot.entity.position.z + (Math.random() - 0.5) * 6;
+            const y = bot.entity.position.y;
+            bot.pathfinder.setMovements(defaultMove);
+            bot.pathfinder.setGoal(new GoalBlock(x, y, z));
+          }, 15000);
+        }
+
+        // ✅ Move đến tọa độ cố định nếu có
+        if (config.position.enabled) {
+          const pos = config.position;
           bot.pathfinder.setMovements(defaultMove);
-          bot.pathfinder.setGoal(new GoalBlock(x, y, z));
-        }, 15000);
+          bot.pathfinder.setGoal(new GoalBlock(pos.x, pos.y, pos.z));
+          console.log(`[BOT] Moving to (${pos.x}, ${pos.y}, ${pos.z})`);
+        }
+      } catch (err) {
+        console.error('[INIT ERROR]', err.message);
       }
+    }, 500); // ⏳ 500ms delay an toàn
 
-      // ✅ Di chuyển cố định nếu có cấu hình
-      if (config.position.enabled) {
-        const pos = config.position;
-        bot.pathfinder.setMovements(defaultMove);
-        bot.pathfinder.setGoal(new GoalBlock(pos.x, pos.y, pos.z));
-        console.log(`[BOT] Moving to (${pos.x}, ${pos.y}, ${pos.z})`);
-      }
-    }, 200); // ← Delay load plugin
-
-    // Chat loop
+    // Chat messages
     if (config.utils['chat-messages'].enabled) {
       const messages = config.utils['chat-messages'].messages;
       const delay = config.utils['chat-messages']['repeat-delay'] * 1000;
@@ -69,7 +75,7 @@ function createBot() {
       }
     }
 
-    // Anti-AFK (sneak, jump)
+    // Anti AFK: jump + sneak
     if (config.utils['anti-afk'].enabled) {
       bot.setControlState('jump', true);
       if (config.utils['anti-afk'].sneak) {
@@ -95,4 +101,3 @@ function createBot() {
 }
 
 createBot();
-
