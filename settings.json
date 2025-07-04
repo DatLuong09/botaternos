@@ -32,7 +32,7 @@
     "chat-messages": {
       "enabled": true,
       "repeat": true,
-      "repeat-delay": 60,
+      "repeat-delay": 120,
       "messages": [
         "bao cát đã vào server",
         "bố bất tử",
