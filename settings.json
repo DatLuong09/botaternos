@@ -34,14 +34,14 @@
       "repeat": true,
       "repeat-delay": 60,
       "messages": [
-        "✅ Bot daydoiiiiiii đã vào server",
-        "⛔ Đừng đánh t nữa",
-        "😴 T đang AFK nhẹ thôi"
+        "bao cát đã vào server",
+        "bố bất tử",
+        " T đang AFK nhẹ thôi"
       ]
     },
 
     "chat-log": true,
     "auto-reconnect": true,
-    "auto-recconect-delay": 5000
+    "auto-recconect-delay": 30000
   }
 }
