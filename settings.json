@@ -2,7 +2,7 @@
   "bot-account": {
     "username": "daydoiiiiiii",
     "password": "",
-    "type": "mojang"
+    "type": "offline"
   },
   "server": {
     "ip": "serverchill99.aternos.me",
@@ -29,12 +29,9 @@
       "enabled": true,
       "repeat": true,
       "repeat-delay": 120,
-      "messages": [
-        "bot đây",
-        "đừng kick t",
-        "đang afk nè"
-      ]
+      "messages": ["bot đây", "đừng kill t", "để t yên"]
     },
+    "chat-log": true,
     "auto-reconnect": true,
     "auto-recconect-delay": 30000
   }
