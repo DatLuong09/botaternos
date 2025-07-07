@@ -32,7 +32,7 @@
       "messages": ["Bot hehehehehe", "Đừng kill t", "T đang AFK"]
     },
     "auto-reconnect": true,
-    "auto-recconect-delay": 30000
+    "auto-reconnect-delay": 30000
   }
 }
 
