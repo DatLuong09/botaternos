@@ -31,12 +31,15 @@ function createBot() {
     const mcData = require('minecraft-data')(bot.version);
     const defaultMove = new Movements(bot, mcData);
 
-    // ❌ Chặn đập và đặt block
-    bot.dig = () => {
+    // ❌ Chặn đập và đặt block (vẫn tương thích promise)
+    bot.dig = async () => {
       console.log('[BLOCKED] bot.dig() bị chặn');
+      return Promise.reject(new Error("dig bị chặn"));
     };
-    bot.placeBlock = () => {
+
+    bot.placeBlock = async () => {
       console.log('[BLOCKED] bot.placeBlock() bị chặn');
+      return Promise.reject(new Error("placeBlock bị chặn"));
     };
 
     // Auto-auth
@@ -128,5 +131,3 @@ function createBot() {
 }
 
 createBot();
-
-
