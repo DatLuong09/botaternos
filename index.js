@@ -6,8 +6,8 @@ const config = require('./settings.json');
 
 const express = require('express');
 const app = express();
-
 const PORT = process.env.PORT || 3000;
+
 app.get('/', (req, res) => res.send('✅ Bot is online!'));
 app.listen(PORT, () => {
   console.log(`[WEB] Listening on port ${PORT}`);
@@ -30,6 +30,14 @@ function createBot() {
     bot.loadPlugin(pathfinder);
     const mcData = require('minecraft-data')(bot.version);
     const defaultMove = new Movements(bot, mcData);
+
+    // ❌ Chặn đập và đặt block
+    bot.dig = () => {
+      console.log('[BLOCKED] bot.dig() bị chặn');
+    };
+    bot.placeBlock = () => {
+      console.log('[BLOCKED] bot.placeBlock() bị chặn');
+    };
 
     // Auto-auth
     if (config.utils['auto-auth'].enabled) {
@@ -60,17 +68,13 @@ function createBot() {
       bot.pathfinder.setGoal(new GoalBlock(pos.x, pos.y, pos.z));
     }
 
-    // 🛡️ Anti-AFK đầy đủ
+    // Anti-AFK
     if (config.utils['anti-afk'].enabled) {
-      // Jump liên tục
       bot.setControlState('jump', true);
-
-      // Sneak nếu bật
       if (config.utils['anti-afk'].sneak) {
         bot.setControlState('sneak', true);
       }
 
-      // Di chuyển random
       setInterval(() => {
         const dx = (Math.random() - 0.5) * 4;
         const dz = (Math.random() - 0.5) * 4;
@@ -83,15 +87,12 @@ function createBot() {
         ));
       }, 15000);
 
-      // Xoay đầu nhìn ngẫu nhiên
       setInterval(() => {
         const yaw = Math.random() * 2 * Math.PI;
         const pitch = (Math.random() - 0.5) * Math.PI / 2;
         bot.look(yaw, pitch, true);
       }, 8000);
 
-     
-      // Tự ngồi nếu đang trong thuyền/minecart
       setInterval(() => {
         const vehicle = bot.entity.vehicle;
         if (vehicle) {
@@ -121,10 +122,11 @@ function createBot() {
   if (config.utils['auto-reconnect']) {
     bot.on('end', () => {
       console.log('[Reconnect] Bot disconnected. Reconnecting...');
-      setTimeout(createBot, config.utils['auto-recconect-delay']);
+      setTimeout(createBot, config.utils['auto-reconnect-delay']);
     });
   }
 }
 
 createBot();
+
 
