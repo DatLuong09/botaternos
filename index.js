@@ -90,11 +90,7 @@ function createBot() {
         bot.look(yaw, pitch, true);
       }, 8000);
 
-      // Vung tay vào không khí
-      setInterval(() => {
-        bot.swingArm();
-      }, 20000);
-
+     
       // Tự ngồi nếu đang trong thuyền/minecart
       setInterval(() => {
         const vehicle = bot.entity.vehicle;
