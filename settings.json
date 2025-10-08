@@ -1,12 +1,12 @@
 {
   "bot-account": {
-    "username": "daydoiiiiiii3",
+    "username": "the_bot",
     "password": "",
     "type": "offline"
   },
   "server": {
-    "ip": "chillchill99.aternos.me",
-    "port": 11371,
+    "ip": "survival_forever99.aternos.me",
+    "port": 46596,
     "version": "1.21.4"
   },
   "position": {
@@ -29,7 +29,7 @@
       "enabled": true,
       "repeat": true,
       "repeat-delay": 120,
-      "messages": ["Bot hehehehehe", "Đừng kill t", "T đang AFK"]
+      "messages": ["Bot hehehehehe", "Chấp cả server", "T đang AFK"]
     },
     "auto-reconnect": true,
     "auto-reconnect-delay": 30000
